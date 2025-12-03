@@ -1,14 +1,11 @@
-const randomstring = require('randomstring')
+const { randomBytes } = require('crypto');
 
-module.exports = (oauth2) => {
-  // Authorization uri definition
-  const authorizationUri = oauth2.authorizeURL({
-    redirectURI: process.env.REDIRECT_URL,
-    scope: process.env.SCOPES || 'repo,user',
-    state: randomstring.generate(32)
-  })
-
-  return (req, res, next) => {
-    res.redirect(authorizationUri)
-  }
-}
+module.exports = (req, res) => {
+  const clientId = process.env.OAUTH_CLIENT_ID;
+  const scope = req.query.scope || 'repo,user';
+  const state = randomBytes(16).toString('hex');
+  
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=${scope}&state=${state}&redirect_uri=${process.env.REDIRECT_URL}`;
+  
+  res.redirect(authUrl);
+};
